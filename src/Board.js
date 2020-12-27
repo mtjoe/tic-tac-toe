@@ -1,25 +1,35 @@
 import React from "react";
-import Square from "./Square";
 
+const Square = ({ value, setSquare }) => {
+    return (
+        <button className="square" onClick={() => setSquare()}>
+            {value}
+        </button>
+    );
+}
 
-const Board = () => {
+const Board = ({ board, setSquare }) => {
+
+    const renderSquare = (i) => (
+        <Square value={board[i]} setSquare={setSquare(i)} />
+    );
+
     return (
         <div>
-            <div className="status">Next player: X</div>
             <div className="board-row">
-                <Square i={0} />
-                <Square i={1} />
-                <Square i={2} />
+                {renderSquare(0)}
+                {renderSquare(1)}
+                {renderSquare(2)}
             </div>
             <div className="board-row">
-                <Square i={3} />
-                <Square i={4} />
-                <Square i={5} />
+                {renderSquare(3)}
+                {renderSquare(4)}
+                {renderSquare(5)}
             </div>
             <div className="board-row">
-                <Square i={6} />
-                <Square i={7} />
-                <Square i={8} />
+                {renderSquare(6)}
+                {renderSquare(7)}
+                {renderSquare(8)}
             </div>
         </div>
     );
