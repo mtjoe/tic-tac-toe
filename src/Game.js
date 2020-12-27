@@ -1,13 +1,23 @@
 import React, { useEffect, useState } from "react";
 import Board from "./Board";
 
-const useBoard = () => {
-    const [currentPlayer, setCurrentPlayer] = useState('X');
-    const [board, setBoard] = useState(Array(9).fill(null));
-    const [history, setHistory] = useState([]);
+const INITIAL_BOARD = Array(9).fill(null);
+const INITIAL_PLAYER = 'X';
+const INITIAL_HISTORY = [
+    {
+        board: INITIAL_BOARD,
+        player: INITIAL_PLAYER,
+    }
+];
+
+const useTicTacToe = () => {
+    const [history, setHistory] = useState(INITIAL_HISTORY);
     const [winner, setWinner] = useState(undefined);
+    const { board, player } = history[history.length - 1];
+    const nextPlayer = player === 'X' ? 'O' : 'X';
 
     const checkWinner = () => {
+        const { board } = history[history.length - 1];
         const lines = [
             [0, 1, 2],
             [3, 4, 5],
@@ -27,40 +37,40 @@ const useBoard = () => {
     };
 
     const setSquare = (i) => () => {
-        setBoard(oldBoard => ({
-            ...oldBoard,
-            [i]: currentPlayer
-        }));
+        const { board } = history[history.length - 1];
 
-        setCurrentPlayer(p => p === 'X' ? 'O' : 'X');
+        if (winner || board[i] !== null) {
+            return;
+        }
+
+        setHistory((prevHistory) => {
+            const { board: prevBoard, player: prevPlayer } = prevHistory[prevHistory.length - 1]
+            const player = prevPlayer === 'X' ? 'O' : 'X'
+            const board = {
+                ...prevBoard,
+                [i]: player
+            };
+
+            return [...prevHistory, { board, player }]
+        })
     };
 
     const revertTo = (index) => {
         if (history.length !== index + 1) {
-            setBoard(history[index].board)
-            setCurrentPlayer(history[index].currentPlayer)
-
-            setHistory((oldHistory) => oldHistory.slice(0, index));
+            setHistory((prevHistory) => prevHistory.slice(0, index + 1));
         }
     };
 
     useEffect(() => {
         checkWinner();
-        setHistory((oldHistory) => ([
-            ...oldHistory,
-            {
-                board,
-                currentPlayer,
-            }
-        ]))
-    }, [board])
+    }, [history, checkWinner])
 
-    return [board, currentPlayer, winner, history, revertTo, setSquare];
+    return [history, board, nextPlayer, winner, revertTo, setSquare];
 }
 
 
 const Game = () => {
-    const [board, currentPlayer, winner, history, revertTo, setSquare] = useBoard();
+    const [history, board, nextPlayer, winner, revertTo, setSquare] = useTicTacToe();
 
     return (
         <div className="game">
@@ -70,7 +80,7 @@ const Game = () => {
             <div className="game-info">
                 <div className="status">
                     {
-                        winner ? `Winner: ${winner}` : `Next player: ${currentPlayer}`
+                        winner ? `Winner: ${winner}` : `Next player: ${nextPlayer}`
                     }
                 </div>
                 <ol>
